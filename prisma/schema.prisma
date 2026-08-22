@@ -1,0 +1,91 @@
+// Prisma Schema for PV Holidays Industrial Visit Feedback System
+// Database: PostgreSQL (Neon)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Trip {
+  id              String   @id @default(uuid())
+  name            String
+  referenceNumber String   @unique
+  collegeName     String
+  destination     String
+  description     String?
+  startDate       DateTime
+  endDate         DateTime
+  feedbackCode    String   @unique
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  students  Student[]
+  feedbacks Feedback[]
+
+  @@map("trips")
+}
+
+model Student {
+  id          String   @id @default(uuid())
+  name        String
+  email       String
+  rollNumber  String
+  department  String
+  year        String
+  collegeName String
+  tripId      String
+  createdAt   DateTime @default(now())
+
+  trip     Trip      @relation(fields: [tripId], references: [id])
+  feedback Feedback?
+
+  @@unique([tripId, rollNumber])
+  @@map("students")
+}
+
+model Feedback {
+  id        String @id @default(uuid())
+  tripId    String
+  studentId String @unique
+
+  // Ratings (1-5)
+  overallRating        Float
+  ivRating             Float
+  transportRating      Float
+  accommodationRating  Float
+  foodRating           Float
+  managementRating     Float
+  activityRating       Float
+  safetyRating         Float
+
+  // NPS Score (0-10)
+  npsScore Int
+
+  // Multi-select (stored as comma-separated strings)
+  likedMost       String? // comma-separated
+  improvementArea String? // comma-separated
+
+  // Free text
+  learningFromIV String?
+  comments       String?
+  testimonial    String?
+  allowTestimonial Boolean @default(false)
+
+  // IV specific
+  ivUsefulRating      Float?
+  ivInformativeRating Float?
+  ivRelevantRating    Float?
+
+  createdAt DateTime @default(now())
+
+  trip    Trip    @relation(fields: [tripId], references: [id])
+  student Student @relation(fields: [studentId], references: [id])
+
+  @@unique([tripId, studentId])
+  @@map("feedbacks")
+}
