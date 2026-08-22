@@ -30,7 +30,7 @@ const IMPROVEMENT_OPTIONS = [
 ]
 
 const DEPARTMENT_OPTIONS = [
-  'CSE', 'ECE', 'EEE', 'IT', 'MECH', 'CIVIL', 'CHEM', 'AERO', 'BIO-TECH', 'MBA', 'MCA', 'Other'
+  'CSE', 'CSBS', 'ECE', 'EEE', 'IT', 'MECH', 'CIVIL', 'CHEM', 'AERO', 'BIO-TECH', 'MBA', 'MCA', 'Other'
 ]
 
 const YEAR_OPTIONS = ['1st Year', '2nd Year', '3rd Year', '4th Year']
