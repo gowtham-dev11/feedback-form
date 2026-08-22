@@ -62,7 +62,7 @@ export default function Home() {
         {/* Admin link */}
         <Link
           href="/admin"
-          className="inline-flex items-center gap-2 text-blue-300 hover:text-blue-200 text-sm transition-colors"
+          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/30 border border-blue-400/30 px-5 py-2.5 rounded-xl text-sm font-medium transition-all transform hover:scale-105"
         >
           Admin Dashboard
           <ArrowRight className="w-4 h-4" />

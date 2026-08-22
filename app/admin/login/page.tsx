@@ -29,8 +29,7 @@ export default function AdminLoginPage() {
       if (!res.ok) {
         setError(data.error || 'Login failed')
       } else {
-        router.push('/admin')
-        router.refresh()
+        window.location.href = '/admin'
       }
     } catch {
       setError('Network error. Please try again.')

@@ -9,21 +9,29 @@ const JWT_SECRET = new TextEncoder().encode(
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Protect admin routes (not the login page)
-  if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
+  // Protect admin routes and redirect away from login if authenticated
+  if (pathname.startsWith('/admin')) {
     const token = request.cookies.get('admin_token')?.value
+    const isLoginPage = pathname.startsWith('/admin/login')
 
     if (!token) {
-      return NextResponse.redirect(new URL('/admin/login', request.url))
-    }
-
-    try {
-      await jwtVerify(token, JWT_SECRET)
-      return NextResponse.next()
-    } catch {
-      const response = NextResponse.redirect(new URL('/admin/login', request.url))
-      response.cookies.delete('admin_token')
-      return response
+      if (!isLoginPage) {
+        return NextResponse.redirect(new URL('/admin/login', request.url))
+      }
+    } else {
+      try {
+        await jwtVerify(token, JWT_SECRET)
+        if (isLoginPage) {
+          return NextResponse.redirect(new URL('/admin', request.url))
+        }
+        return NextResponse.next()
+      } catch {
+        if (!isLoginPage) {
+          const response = NextResponse.redirect(new URL('/admin/login', request.url))
+          response.cookies.delete('admin_token')
+          return response
+        }
+      }
     }
   }
 
