@@ -70,8 +70,8 @@ export async function POST(
       return NextResponse.json({ error: 'Trip feedback is no longer active' }, { status: 403 })
     }
 
-    // Find student
-    const student = await prisma.student.findFirst({
+    // Find or create student
+    let student = await prisma.student.findFirst({
       where: {
         tripId: trip.id,
         rollNumber: rollNumber.trim().toUpperCase(),
@@ -79,26 +79,41 @@ export async function POST(
     })
 
     if (!student) {
-      return NextResponse.json({ error: 'Student not found for this trip' }, { status: 404 })
+      student = await prisma.student.create({
+        data: {
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          rollNumber: rollNumber.trim().toUpperCase(),
+          department,
+          year,
+          collegeName: trip.collegeName,
+          tripId: trip.id,
+        },
+      })
+    } else {
+      // Check duplicate feedback for existing student
+      const existingFeedback = await prisma.feedback.findFirst({
+        where: { tripId: trip.id, studentId: student.id },
+      })
+
+      if (existingFeedback) {
+        return NextResponse.json({ 
+          error: 'You have already submitted feedback for this trip. Thank you!',
+          alreadySubmitted: true
+        }, { status: 409 })
+      }
+
+      // Update student details if they provided different ones
+      student = await prisma.student.update({
+        where: { id: student.id },
+        data: { 
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          department,
+          year
+        },
+      })
     }
-
-    // Check duplicate
-    const existingFeedback = await prisma.feedback.findFirst({
-      where: { tripId: trip.id, studentId: student.id },
-    })
-
-    if (existingFeedback) {
-      return NextResponse.json({ 
-        error: 'You have already submitted feedback for this trip. Thank you!',
-        alreadySubmitted: true
-      }, { status: 409 })
-    }
-
-    // Update student email if provided
-    await prisma.student.update({
-      where: { id: student.id },
-      data: { email: email.trim().toLowerCase() },
-    })
 
     // Create feedback
     const feedback = await prisma.feedback.create({
